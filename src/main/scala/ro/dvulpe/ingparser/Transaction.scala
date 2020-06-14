@@ -1,8 +1,8 @@
 package ro.dvulpe.ingparser
 
-import org.joda.time.DateTime
+import java.time.LocalDate
 
-case class Transaction(id: String, date: DateTime, notes: String, amount: BigDecimal,
+case class Transaction(id: String, date: LocalDate, notes: String, amount: BigDecimal,
                        payee: String, accountRef: Option[String], bank: Option[String],
                        reference: String)
 

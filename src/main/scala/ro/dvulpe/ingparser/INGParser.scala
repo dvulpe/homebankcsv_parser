@@ -1,6 +1,6 @@
 package ro.dvulpe.ingparser
 
-import org.joda.time.{LocalDate, LocalDateTime}
+import java.time.LocalDate
 
 import scala.util.Try
 import scala.util.parsing.combinator._
@@ -21,7 +21,7 @@ object INGParser extends RegexParsers with CSVParser {
 
   def asDate(data: String) = Parser {
     in: Input =>
-      Try(data.asDateTime) match {
+      Try(data.asLocalDate) match {
         case scala.util.Success(localDate) => Success(localDate, in)
         case scala.util.Failure(ex) => Failure(ex.toString, in)
       }

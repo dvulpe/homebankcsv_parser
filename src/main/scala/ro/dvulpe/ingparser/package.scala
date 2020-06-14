@@ -1,15 +1,15 @@
 package ro.dvulpe
 
-import org.joda.time.format.DateTimeFormat
+import java.text.{DecimalFormat, NumberFormat}
+import java.time.LocalDate
+import java.time.format.{DateTimeFormatter, FormatStyle}
 import java.util.Locale
-import java.text.{NumberFormat, DecimalFormat}
 
 package object ingparser {
   implicit def richString(input: String) = new {
-    def asDateTime = DateTimeFormat.forPattern("dd MMMMM yyyy")
-      .withLocale(new Locale("RO"))
-      .parseDateTime(input)
-      .toLocalDate
+    private val localDateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(new Locale("RO"))
+
+    def asLocalDate = LocalDate.parse(input, localDateFormatter)
 
     def asDecimal = {
       val format: DecimalFormat = NumberFormat.getInstance(new Locale("RO")).asInstanceOf[DecimalFormat]

@@ -1,9 +1,9 @@
 package ro.dvulpe.ingparser
 
-import org.scalatest.FunSuite
-import org.joda.time.{DateTime, LocalDate, LocalDateTime}
+import java.time.LocalDate
+import org.scalatest.funsuite.AnyFunSuite
 
-class INGParserTest extends FunSuite {
+class INGParserTest extends AnyFunSuite {
 
   test("transaction detail line should be parsed") {
     val input = ",Beneficiar: RCS AND RDS SA,,"
@@ -20,7 +20,7 @@ class INGParserTest extends FunSuite {
   test("transaction summary line should be parsed") {
     val input = "30 septembrie 2013,Plata debit direct,\"120,19\","
     val result = INGParser.parseTest(input, INGParser.summaryLine)
-    assert(result === Summary(new LocalDate("2013-09-30"), "Plata debit direct", Some(BigDecimal("120.19")), None))
+    assert(result === Summary(LocalDate.of(2013, 9, 30), "Plata debit direct", Some(BigDecimal("120.19")), None))
   }
 
   test("transaction with details should be parsed") {
