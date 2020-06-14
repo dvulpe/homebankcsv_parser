@@ -2,6 +2,7 @@ package ro.dvulpe.ingparser
 
 import java.time.LocalDate
 
+import scala.language.postfixOps
 import scala.util.Try
 import scala.util.parsing.combinator._
 
