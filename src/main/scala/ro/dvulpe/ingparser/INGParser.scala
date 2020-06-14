@@ -1,14 +1,14 @@
 package ro.dvulpe.ingparser
 
-import org.joda.time.DateTime
+import org.joda.time.{LocalDate, LocalDateTime}
 
 import scala.util.Try
 import scala.util.parsing.combinator._
 
-case class Summary(date: DateTime, details: String, debit: Option[BigDecimal], credit: Option[BigDecimal]) {
+case class Summary(date: LocalDate, details: String, debit: Option[BigDecimal], credit: Option[BigDecimal]) {
   def asList = date :: details :: debit.getOrElse("") :: credit.getOrElse("") :: Nil
 
-  def asString = s"${date.toLocalDate.toString} - $details, Debit: $debit, Credit: $credit"
+  def asString = s"${date.toString} - $details, Debit: $debit, Credit: $credit"
 }
 
 case class IngRecord(summary: Summary, details: Seq[String]) {
@@ -27,7 +27,7 @@ object INGParser extends RegexParsers with CSVParser {
       }
   }
 
-  val date: Parser[DateTime] = field >> asDate
+  val date: Parser[LocalDate] = field >> asDate
 
   def asDecimal(data: String) = Parser {
     in: Input =>

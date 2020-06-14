@@ -27,11 +27,11 @@ trait CSVParser extends RegexParsers {
     }
   }
 
-  val nonEscaped = (TXT *) ^^ {
+  val plain = (TXT *) ^^ {
     case ls => ls.mkString
   }
 
-  val field = escaped | nonEscaped
+  val field = escaped | plain
 
   val record = repsep(field, COMMA)
 
