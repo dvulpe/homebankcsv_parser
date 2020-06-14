@@ -2,9 +2,9 @@
 
 set -e
 
-sbtver=1.3.8
-sbtjar=.sbt-launch.jar
-sha256=305e7202756bae9887810e3a81070ccd94d966c60e5e3e3c6082455ab33eb59a
+sbtver=1.3.10
+sbtjar=".sbt/.sbt-launch-${sbtver}.jar"
+sha256=b8bb78b91b39fb0036cf97e736333b2e73a2cb098fdcad114851b4aa6cb9a26a
 sbtrepo=https://repo1.maven.org/maven2/org/scala-sbt/sbt-launch
 
 validjar() {
@@ -19,6 +19,7 @@ fi
 
 if [ ! -f $sbtjar ]; then
   echo "downloading $sbtjar" >&2
+  if [ ! -d ".sbt" ]; then mkdir -p .sbt; fi
   curl -L --silent --fail -o $sbtjar $sbtrepo/$sbtver/sbt-launch.jar
 fi
 
