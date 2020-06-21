@@ -1,14 +1,14 @@
 package ro.dvulpe.ingparser
 
 import scala.language.postfixOps
+import scala.util.matching.Regex
 import scala.util.parsing.combinator._
-import scala.util.parsing.input.Reader
 
 
 trait CSVParser extends RegexParsers {
   override val skipWhitespace = false // meaningful spaces in CSV
 
-  override val whiteSpace = "".r
+  override val whiteSpace: Regex = "".r
 
 
   override protected def handleWhiteSpace(source: CharSequence, offset: Int): Int =
@@ -16,29 +16,27 @@ trait CSVParser extends RegexParsers {
 
   val COMMA = ","
   val DQUOTE = "\""
-  val DQUOTE_ESC = "\"\"" ^^^ "\""
+  val DQUOTE_ESC: Parser[String] = "\"\"" ^^^ "\""
 
-  val CRLF = "\r\n" | "\n"
-  val TXT = "[^\",\r\n]".r
-  val SPACES = "[ \t]+".r
+  val CRLF: Parser[String] = "\r\n" | "\n"
+  val TXT: Regex = "[^\",\r\n]".r
+  val SPACES: Regex = "[ \t]+".r
 
-  val escaped = {
-    ((SPACES ?) ~> DQUOTE ~> ((COMMA | CRLF | TXT | DQUOTE_ESC) *) <~ DQUOTE <~ (SPACES ?)) ^^ {
-      case ls => ls.mkString("")
-    }
+  val escaped: Parser[String] = {
+    ((SPACES ?) ~> DQUOTE ~> ((COMMA | CRLF | TXT | DQUOTE_ESC) *) <~ DQUOTE <~ (SPACES ?)) ^^ (ls => ls.mkString(""))
   }
 
-  val plain = (TXT *) ^^ {
-    case ls => ls.mkString
-  }
+  val plain: Parser[String] = (TXT *) ^^ (ls => ls.mkString)
 
-  val field = escaped | plain
+  val field: Parser[String] = escaped | plain
 
-  val record = repsep(field, COMMA)
+  val record: Parser[List[String]] = repsep(field, COMMA)
 
-  val file = repsep(record, CRLF) <~ (CRLF ?)
+  val file: Parser[List[List[String]]] = repsep(record, CRLF) <~ (CRLF ?)
 
-  def parse(s: Reader[Char]) = parseAll(file, s) match {
+  def parse(s: String): List[List[String]] = parser(file, s)
+
+  protected def parser[T](p: Parser[T], in: String): T = parseAll(p, in) match {
     case Success(res, _) => res
     case e => throw new Exception(e.toString)
   }

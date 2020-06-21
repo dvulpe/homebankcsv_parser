@@ -5,6 +5,8 @@ import java.time.LocalDate
 import java.time.format.{DateTimeFormatter, FormatStyle}
 import java.util.Locale
 
+import scala.language.implicitConversions
+
 package object ingparser {
   implicit def richString(input: String) = new {
     private val localDateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(new Locale("RO"))

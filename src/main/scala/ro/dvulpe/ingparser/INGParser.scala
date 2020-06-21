@@ -19,56 +19,40 @@ case class IngRecord(summary: Summary, details: Seq[String]) {
 }
 
 object INGParser extends RegexParsers with CSVParser {
+  private def mapper[T](f: String => T): String => Parser[T] =
+    src => Parser {
+      in: Input =>
+        Try(f(src)).fold(
+          ex => Failure(ex.getMessage, in),
+          v => Success(v, in)
+        )
+    }
 
-  def asDate(data: String) = Parser {
-    in: Input =>
-      Try(data.asLocalDate) match {
-        case scala.util.Success(localDate) => Success(localDate, in)
-        case scala.util.Failure(ex) => Failure(ex.toString, in)
-      }
-  }
+  private val date: Parser[LocalDate] = field >> mapper(_.asLocalDate)
 
-  val date: Parser[LocalDate] = field >> asDate
+  private val decimal: Parser[BigDecimal] = field >> mapper(_.asDecimal)
 
-  def asDecimal(data: String) = Parser {
-    in: Input =>
-      Try(data.asDecimal) match {
-        case scala.util.Success(value) => Success(value, in)
-        case scala.util.Failure(ex) => Failure(ex.getMessage, in)
-      }
-  }
+  val transDetail: Parser[String] = COMMA ~> field <~ repsep(field, COMMA)
 
-  val decimal = field >> asDecimal
+  val transDetails: Parser[List[String]] = rep(transDetail <~ (CRLF ?))
 
-  val transDetail = COMMA ~> field <~ repsep(field, COMMA)
-
-  val transDetails = rep(transDetail <~ (CRLF ?))
-
-  val summaryLine =
+  val summaryLine: Parser[Summary] =
     (date <~ COMMA) ~ (field <~ COMMA) ~ (decimal.? <~ COMMA) ~ (decimal ?) ^^ {
       case transactionDate ~ details ~ credit ~ debit =>
         Summary(transactionDate, details, credit, debit)
     }
 
-  val ingRecord =
+  val ingRecord: Parser[IngRecord] =
     (summaryLine <~ CRLF) ~ (transDetails ?) ^^ {
       case summary ~ trans =>
         IngRecord(summary, trans.getOrElse(Seq.empty))
     }
 
-  val header = ("Data" ~> rep1sep(field, COMMA)) ~> CRLF
+  val header: Parser[String] = ("Data" ~> rep1sep(field, COMMA)) ~> CRLF
 
-  val ingRecords = header.? ~> rep(ingRecord <~ CRLF.?)
+  val ingRecords: Parser[List[IngRecord]] = header.? ~> rep(ingRecord <~ CRLF.?)
 
-  def parseRecords(s: String): List[IngRecord] = parseAll(ingRecords, s) match {
-    case Success(res, _) => res
-    case e => throw new Exception(e.toString)
-  }
+  def parseRecords(s: String): List[IngRecord] = parser(ingRecords, s)
 
-  def parseTest[T](in: String, parser: Parser[T]): T = {
-    parseAll(parser, in) match {
-      case Success(res, _) => res
-      case e => throw new Exception(e.toString)
-    }
-  }
+  def parseTest[T](in: String, p: Parser[T]): T = parser(p, in)
 }
